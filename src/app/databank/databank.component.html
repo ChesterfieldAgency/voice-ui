@@ -1,7 +1,6 @@
 <header class="header-6">
   <div class="branding">
-    <span class="title" *ngIf="items.length">{{items[0].seriesName}}</span>
-    <span class="title" *ngIf="!items.length">Make a request to view data about countries.</span>
+    <span class="title">Make a request to view data.</span>
   </div>
   <form class="search" (submit)="onCommand($event)">
       <label for="command">
