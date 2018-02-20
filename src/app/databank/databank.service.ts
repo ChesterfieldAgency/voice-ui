@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MetricsData } from './databank.model';
-import { Http, Headers } from '@angular/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 declare const localStorage: any;
 
@@ -60,11 +60,30 @@ export class Query {
   display: string = 'list';
 }
 
+export interface DialogFlowResponse {
+  id: string;
+  lang: string;
+  result: Result;
+}
+
+export interface Result {
+  action: string;
+  actionIncomplete: boolean;
+  parameters: {
+    country: string;
+    display: string;
+    limit: number;
+    metric: string;
+    relative: string;
+  };
+  resolvedQuery: string;
+}
+
 @Injectable()
 export class DatabankService {
   private data: Metric[] = MetricsData;
 
-  constructor(private http: Http) {}
+  constructor(private http: HttpClient) {}
 
   queryAll(code, sort, limit = 216) {
     return this.data
@@ -108,7 +127,7 @@ export class DatabankService {
     const bearerId = localStorage.getItem('bearerId');
     return this.http.get(`/api/query?v=20150910&query=${text}` +
     `&lang=en&sessionId=${sessionId}`, {
-      headers: new Headers({
+      headers: new HttpHeaders({
         Authorization: `Bearer ${bearerId}`
       })
     });

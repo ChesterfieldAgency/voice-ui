@@ -1,9 +1,8 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
-import { ClarityModule } from 'clarity-angular';
-import { AngularFireModule } from 'angularfire2';
+import { HttpClientModule } from '@angular/common/http';
+import { ClarityModule } from '@clr/angular';
 
 import { DatabankModule } from './databank/databank.module';
 
@@ -18,9 +17,8 @@ import { environment } from '../environments/environment';
   imports: [
     BrowserModule,
     FormsModule,
-    HttpModule,
-    ClarityModule.forRoot(),
-    AngularFireModule.initializeApp(environment.firebaseConfig),
+    HttpClientModule,
+    ClarityModule,
     DatabankModule,
   ],
   providers: [],

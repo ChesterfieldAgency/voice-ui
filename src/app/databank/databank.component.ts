@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFire, FirebaseListObservable } from 'angularfire2';
-import { DatabankService, Metric, MetricType, MetricTypes, Query } from './databank.service';
+import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
+import { DatabankService, Result, Metric, MetricType, MetricTypes, Query, DialogFlowResponse } from './databank.service';
 
 @Component({
   selector: 'app-databank',
@@ -12,41 +12,47 @@ import { DatabankService, Metric, MetricType, MetricTypes, Query } from './datab
 })
 export class DatabankComponent implements OnInit {
   metric: MetricType;
-  subscription: FirebaseListObservable<any[]>;
+  subscription: AngularFireList<any[]>;
   query = new Query();
   metrics = new MetricTypes();
   items: Metric[] = [];
   init: boolean = false;
   loading: boolean = false;
-  result: string = '';
+  result: Result;
   command: string = '';
   mode: string = 'list';
   scheme = {
     domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
   };
   page: number = 1;
+  recognition: SpeechRecognition = new webkitSpeechRecognition();
+  listening = false;
+  error = false;
 
   constructor(
-    private af: AngularFire,
+    private db: AngularFireDatabase,
     private databankService: DatabankService
   ) {}
 
   // Setup the subscription on init
   ngOnInit() {
-    this.subscription = this.af.database.list('requests', {
-      query: {
-        orderByChild: 'timestamp',
-        limitToLast: 1
-      }
-    });
-    this.subscription.subscribe(res => {
-      console.log(res);
+    this.db.list('requests', ref =>
+      ref.orderByChild('timestamp').limitToLast(1)
+    ).valueChanges().subscribe((res: DialogFlowResponse[]) => {
+      console.log('result', res);
       if (res[0] && res[0].result.action === 'databank-display') {
         const result = res[0].result;
+
         this.metric = this.metrics[result.parameters.metric];
         if (this.init) {
-          this.loading = true;
           this.result = result;
+
+          if (result.actionIncomplete) {
+            this.error = true;
+            return;
+          }
+          
+          this.loading = true;
 
           setTimeout(() => {
             if (result.parameters.country) {
@@ -87,5 +93,27 @@ export class DatabankComponent implements OnInit {
     } else {
       this.mode = 'list';
     }
+  }
+
+  
+
+  request() {
+    if (this.listening) {
+      this.recognition.abort();
+      this.listening = false;
+      return;
+    }
+
+    this.recognition.onstart = (event) => {
+      this.listening = true;
+    };
+    this.recognition.onresult = (event) => {
+      this.listening = false;
+      this.command = event.results[0][0].transcript;
+      this.databankService.command(this.command).subscribe(response => {
+        this.command = '';
+      });
+    };
+    this.recognition.start();
   }
 }

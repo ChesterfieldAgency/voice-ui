@@ -8,7 +8,8 @@
       </label>
   </form>
   <div class="header-actions">
-    <!--<button (click)="toggleMode()" class="btn btn-primary">Toggle Display Mode</button>-->
+    <button (click)="request()" *ngIf="!listening" class="btn btn-primary">Request</button>
+    <button (click)="request()" [clrLoading]="listening" *ngIf="listening" class="btn btn-primary">Cancel</button>
   </div>
 </header>
 
@@ -66,7 +67,15 @@
 
 <clr-modal [(clrModalOpen)]="loading" [clrModalClosable]="false">
   <div class="modal-body">
-    <h3><q>{{result?.resolvedQuery}}</q></h3>
     <div class="spinner spinner-md"></div>
+    <h3><q>{{result?.resolvedQuery}}</q></h3>
+  </div>
+</clr-modal>
+
+<clr-modal [(clrModalOpen)]="error" [clrModalClosable]="true">
+  <div class="modal-body">
+    <h3>Sorry I don't have enough information! </h3>
+    <h5>I can share details about a top countries or a single country's economy and population.</h5>
+    <q>I heard <i>"{{result?.resolvedQuery}}"</i></q>
   </div>
 </clr-modal>
